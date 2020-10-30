@@ -27,6 +27,7 @@ $SPEC{parse_url} = {
 };
 sub parse_url {
     require URI::URL;
+
     my %args = @_;
     my $url = URI::URL->new($args{url}, $args{base});
     +{
@@ -38,7 +39,7 @@ sub parse_url {
         opaque => $url->opaque,
         path => $url->path, # unescaped string
         fragment => $url->fragment,
-        canonical => $url->canonical,
+        canonical => $url->canonical . "",
         authority => $url->authority,
         query => $url->query, # escaped
 
@@ -47,7 +48,7 @@ sub parse_url {
         port => $url->port,
         default_port => $url->default_port,
 
-        abs_path  => $url->abs_path,
+        #abs_path  => $url->abs_path,
         full_path => $url->full_path, # abs_path || "/"
 
     };
