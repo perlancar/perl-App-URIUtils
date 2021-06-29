@@ -24,6 +24,9 @@ $SPEC{parse_url} = {
         base => {schema => 'str*', pos=>1},
     },
     result_naked => 1,
+    examples => [
+        {args=>{url=>'https://www.tokopedia.com/search?st=product&q=soundmagic%20e10'}},
+    ],
 };
 sub parse_url {
     require URI::URL;
