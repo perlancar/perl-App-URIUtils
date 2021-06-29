@@ -22,39 +22,61 @@ $SPEC{parse_url} = {
     args => {
         url => {schema => 'str*', req=>1, pos=>0},
         base => {schema => 'str*', pos=>1},
+        parse_type => {
+            schema => ['str*', in=>['url', 'query-params']],
+            default => 'url',
+            cmdline_aliases => {
+                t=>{},
+                p=>{is_flag=>1, summary=>'Shortcut for --parse-type=query-params', code=>sub { $_[0]{parse_type} = 'query-params' }},
+            },
+
+        },
     },
     result_naked => 1,
     examples => [
-        {args=>{url=>'https://www.tokopedia.com/search?st=product&q=soundmagic%20e10'}},
+        {
+            args=>{url=>'https://www.tokopedia.com/search?st=product&q=soundmagic%20e10'},
+        },
+        {
+            summary => 'Just parse the query parameters into hash',
+            argv=>['-p', 'https://www.tokopedia.com/search?st=product&q=soundmagic%20e10'],
+        },
     ],
 };
 sub parse_url {
     require URI::URL;
+    require URI::QueryParam;
 
     my %args = @_;
     my $url = URI::URL->new($args{url}, $args{base});
-    +{
-        orig => $args{url},
-        base => $args{base},
+    if ($args{parse_type} eq 'url') {
+        return +{
+            orig => $args{url},
+            base => $args{base},
 
-        scheme => $url->scheme,
-        has_recognized_scheme => $url->has_recognized_scheme,
-        opaque => $url->opaque,
-        path => $url->path, # unescaped string
-        fragment => $url->fragment,
-        canonical => $url->canonical . "",
-        authority => $url->authority,
-        query => $url->query, # escaped
+            scheme => $url->scheme,
+            has_recognized_scheme => $url->has_recognized_scheme,
+            opaque => $url->opaque,
+            path => $url->path, # unescaped string
+            fragment => $url->fragment,
+            canonical => $url->canonical . "",
+            authority => $url->authority,
+            query => $url->query, # escaped
 
-        # server/host methods
-        host => $url->host,
-        port => $url->port,
-        default_port => $url->default_port,
+            # server/host methods
+            host => $url->host,
+            port => $url->port,
+            default_port => $url->default_port,
 
-        #abs_path  => $url->abs_path,
-        full_path => $url->full_path, # abs_path || "/"
+            #abs_path  => $url->abs_path,
+            full_path => $url->full_path, # abs_path || "/"
 
-    };
+        };
+    } elsif ($args{parse_type} eq 'query-params') {
+        return $url->query_form_hash;
+    } else {
+        die "Unknown parse type: $args{parse_type}";
+    }
 }
 
 1;
